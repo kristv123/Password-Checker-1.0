@@ -1,119 +1,90 @@
+// main.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
 #include "main.h"
-
-void getUserInput(char* password, int size);
-char* getUserString(char* buff, int n);
-int calcStrengthScore(char* password, int size);
+int calcStrengthScore(char *password, int size);
+void getUserInput(char *password, int size);
+char *getUserString(char *buff, int n);
 void printMenu();
+void printColorBar(int score, const char *color);
+char *getColor(int score);
+void getFeedback(char *password, int size);
 
 int main(int argc, char const *argv[])
-{   
+{
     int score = 0;
     printMenu();
     return 0;
 }
 
+// prints the main menu and handles user interaction
 void printMenu()
 {
-    printf("Welcome to the password checker!\nPlease enter the password you want to check:\n");
+    printf("Welcome to the password checker!\nPlease enter the password you want to check:\n> ");
     char passwordBuff[100] = {0};
     char *sPassword;
-    
-    //get password from user
+
+    // get password from user
     int bufSize = sizeof(passwordBuff);
     getUserString(passwordBuff, bufSize);
     sPassword = passwordBuff;
     int passwordSize = strlen(sPassword);
-    printf("Password entered: %s\n", sPassword); 
+    printf("Password entered: %s\n", sPassword);
 
-    //check strength of password and print result
+    // check strength of password and print result
     int score = calcStrengthScore(sPassword, passwordSize);
+    printColorBar(score, getColor(score));
+    getFeedback(sPassword, passwordSize);
 }
 
-char* getUserString(char* buff, int n)
+// gets user input and stores it in the provided buffer
+char *getUserString(char *buff, int n)
 {
- char *userInput = fgets(buff, n-1, stdin);
- userInput[strlen(userInput)-1] = '\0';
- return userInput; 
+    char *userInput = fgets(buff, n - 1, stdin);
+    userInput[strlen(userInput) - 1] = '\0';
+    return userInput;
 }
 
-int calcStrengthScore(char* password, int size)
+char *getColor(int score)
 {
-    int score = 0;
-    printf("Size: %d\n", size);
-    
-    //character type scoring
-    for (int i = 0; i < size; i++)
+    const char *color;
+    if (score == 0 || score <= 2)
     {
-        char c = password[i];
-        printf("char: %c", c);
-        printf("Score: %d\n", score);
-        if(isupper(c))
-        {
-            score += 2;
-        }
-        else if (islower(c))
-        {
-            score += 1;
-        }
-        else if (isdigit(c))
-        {
-            score += 2; 
-        }
-        else 
-        {
-            score += 3; 
-        }
-
-        //length scoring
-        if (size > 8)
-        {
-            score += 1; 
-        }
-        if (size > 12)
-        {
-            score += 1;
-        }
-         if (size > 17)
-        {
-            score += 1;
-        }
-        if (size > 20)
-        {
-            score += 1;
-        }
+        color = "\033[1;31m"; // Red
     }
-        /*score classification:
-        Very weak = 0-2
-        Weak = 3-5
-        Medium = 6-8
-        Strong = 9-12
-        Very Strong = > 12
-        */
-        if (score == 0 || score <= 2)
-        {
-            printf("Your password is very weak! Score: %d\n", score);
-        }
-        else if (score >= 3 && score <= 5)
-        {
-            printf("Your password is weak! Score: %d\n", score);
-        }
-        else if (score >= 6 && score <= 8)
-        {
-            printf("Your password is medium! Score: %d\n", score);
-        }
-        else if (score >= 9 && score <= 12)
-        {
-            printf("Your password is strong! Score: %d\nGood job! Could still be better. \n", score);
-        }
-        else if (score > 12)
-        {
-            printf("Your password is very strong! Score: %d\nTop score! \n", score);
-        }
+    else if (score >= 3 && score <= 5)
+    {
+        color = "\033[1;91m"; // Light red
+    }
+    else if (score >= 6 && score <= 8)
+    {
+        color = "\033[1;33m"; // Yellow
+    }
+    else if (score >= 9 && score <= 12)
+    {
+        color = "\033[1;92m"; // Light green
+    }
+    else if (score > 12)
+    {
+        color = "\033[1;32m"; // Green
+    }
+    return (char *)color;
+}
 
-    return score; 
+// prints a color bar representing the strength score
+void printColorBar(int score, const char *color)
+{
+    printf("\nStrength %d:\n", score);
+    printf("%s[", color);
+    for (int i = 0; i < 12; i++)
+    {
+        if (i < score)
+            printf("█");
+        else
+            printf("░");
+    }
+    printf("]\n%s", "\033[0m\n"); // Reset color
 }
